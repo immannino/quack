@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Site Behavior tags -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="25">
+
+    <!-- Basic site info-->
+    <meta name="title" data-hid="title" content="quack">
+    <meta name="description" data-hid="description" content="a simple duckdb utility">
+
+    <!-- Open Graph (Facebook/Linkedin) tags -->
+    <!-- Testing tool: https://developers.facebook.com/tools/debug/ -->
+    <meta property="og:site_name" content="quack">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:url" content="https://quack.ope.cool">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="quack">
+    <meta property="og:description" content="a simple duckdb utility">
+    <meta property="og:image" content="">
+
+    <!-- Twitter tags -->
+    <!-- Testing tool: https://cards-dev.twitter.com/validator -->
+    <meta name="twitter:site" content="https://quack.ope.cool">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="quack">
+    <meta name="twitter:description" content="a simple duckdb utility">
+    <meta name="twitter:image" content="">
+    <meta name="twitter:image:alt" content="">
+    <title>quack</title>
+    
+    <!-- Inline SVG Emoji Icon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>𓅰</text></svg>">
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-toast-notification@2"></script>
+    <link href="https://cdn.jsdelivr.net/npm/vue-toast-notification@2/dist/theme-sugar.css" rel="stylesheet">
+    <!-- New.css
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">  -->
+
+    <!-- Magick CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css">
+    <link rel="stylesheet" href="https://unpkg.com/magick.css">
+</head>
+<body>
+    <main id="app">
+        <header> <h1>quack 𓅰</h1> </header>
+        <section @enter="Exec"> 
+
+        <div class="row">
+            <input type="file" name="File" id="File" accept=".csv" @change="handleFile">
+        </div>
+        <div class="row">
+            <textarea v-model="query"></textarea> 
+            <button @click="Exec()">Submit</button>
+        </div>
+        <div v-if="err" class="error">{{ err }}</div>
+        <div v-if="isLoading" class="loading-container">
+            <div class="loader"></div>
+        </div>
+        <div v-if="response">
+            <table>
+                <caption><code>{{ query }}</code></caption>
+                <thead>
+                    <tr>
+                        <th v-for="(h, index) of response[0]" :key="index">{{ h }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(r, index) of response.slice(1)" :key="index">
+                        <td v-for="(d, index2) of r" :key="index2">{{ d }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </section>
+        <footer><a href="https://www.spaghet.me">Made by tones 👨🏻</a></footer>
+    </main>
+    <div id="app">
+    </div>
+    <script>
+        const app = Vue.createApp({
+            el: '#app',
+            data() {
+                return {
+                    file: 'data.csv',
+                    query: 'Hehe',
+                    response: null,
+                    isLoading: false,
+                    err: null
+                }
+            },
+            async mounted() {
+                this.queryTemplate();
+                await this.Exec();
+            },
+            methods: {
+                handleFile(e) {
+                    this.file = e.target.files[0].name;
+                    this.queryTemplate();
+                },
+                queryTemplate() {
+                    this.query = `SELECT * FROM "${this.file}" LIMIT 10;`
+                },
+                async Exec() {
+                    this.isLoading = true
+
+                    try {
+                        const data = await (await fetch('/exec', {
+                            method: "POST",
+                            body: JSON.stringify({
+                                File: this.file,
+                                Query: this.query,
+                            })
+                        })).json()
+                        this.response = data;
+                    } catch (err) {
+                        this.err = err
+                    }
+
+                    this.isLoading = false
+                }
+            }
+        })
+        app.use(VueToast)
+        app.mount('#app');
+    </script>
+    <style>
+        :root {
+
+        }
+
+        html, body {
+            background-color: rgb(255, 255, 193);
+        }
+        .row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .row > * {
+            padding: 0.75rem 0.25rem;
+        }
+ 
+        input {
+            flex: 1 1 auto;
+            font-family: monospace;
+            margin: 0;
+        }
+
+        .error {
+            background: red;
+            color: white;
+            box-shadow: 0px 0px 5px #e1e1e1;
+            padding: 0.5rem 1rem;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        table {
+            width: 100%;
+        }
+        button {
+            flex: 0 1 100px;
+        }
+
+        footer {
+            text-align: center;
+        }
+
+        @media screen and (max-width: 650px) {
+            .row {
+                display: block;
+            }
+
+            .row > * {
+                width: 100%;
+                margin: 1rem 0;
+            }
+        }
+
+        textarea {
+            font-size: 12px;
+            font-family: monospace;
+            width: 100%;
+        }
+        .loading-container {
+            padding: 1rem;
+        }
+
+        .loader {
+            margin: 0 auto;
+        }
+
+        .loader {
+            height: 6px;
+            /* width: 60px; */
+            --c:no-repeat repeating-linear-gradient(90deg,#000 0 3px,#0000 0 6px);
+            background: var(--c), var(--c);
+            background-size: 100% 3px;
+            animation: l9 1s infinite;
+        }
+
+        @keyframes l9 {
+            0%,
+            70%,
+            100%   {background-position: 0   50%,3px 50% }
+            23.33% {background-position: 0   0  ,3px 100%}
+            46.67% {background-position: 3px 0  ,0   100%}
+            69.99% {background-position: 3px 50%,0   50% }
+        }
+    </style>
+</body>
+</html>
