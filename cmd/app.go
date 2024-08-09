@@ -13,9 +13,6 @@ import (
 	_ "github.com/marcboeker/go-duckdb"
 )
 
-// var t *template.Template
-// var debug string
-
 var db *sql.DB
 
 func init() {
@@ -26,13 +23,6 @@ func init() {
 	db = conn
 }
 
-// go:embed *.html
-// var fs embed.FS
-
-//	func init() {
-//		t = template.Must(template.ParseFS(fs, "./*.html"))
-//		debug = os.Getenv("DEBUG")
-//	}
 func Start() {
 	router := mux.NewRouter()
 
@@ -57,9 +47,8 @@ func Start() {
 	}
 }
 
-func PageHandler(w http.ResponseWriter, r *http.Request) {
+func Dir(w http.ResponseWriter, r *http.Request) {
 
-	// html(w, 200, "index", nil)
 }
 
 type ExecBody struct {
@@ -100,27 +89,3 @@ func ExecHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(data)
 }
-
-// func html(w http.ResponseWriter, httpStatus int, templateName string, data interface{}) {
-// 	w.Header().Add("Content-Type", "text/html")
-// 	w.WriteHeader(http.StatusOK)
-
-// 	if len(debug) > 0 {
-// 		d := template.Must(template.ParseGlob(filepath.Join("./cmd", "*.html")))
-// 		tmp := d.Lookup(templateName)
-// 		err := tmp.Execute(w, data)
-
-// 		if err != nil {
-// 			log.Println("Error executing template :", err)
-// 		}
-
-// 		return
-// 	}
-
-// 	tmp := t.Lookup(templateName)
-// 	err := tmp.Execute(w, data)
-
-// 	if err != nil {
-// 		log.Println("Error executing template :", err)
-// 	}
-// }

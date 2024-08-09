@@ -98,6 +98,7 @@
             },
             methods: {
                 handleFile(e) {
+                    console.log(e.target.files)
                     this.file = e.target.files[0].name;
                     this.queryTemplate();
                 },
